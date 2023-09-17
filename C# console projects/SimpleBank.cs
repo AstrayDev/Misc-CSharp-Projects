@@ -2,7 +2,7 @@
 
 namespace C_;
 
-class Test
+class SimpleBank
 {
     public class Account
     {
