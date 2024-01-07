@@ -126,7 +126,7 @@ abstract class Games
 
             do
             {
-                numberTwo = 2 * rand.Next(2 / 2, numberOne);
+                numberTwo = rand.Next(1, numberOne);
 
             } while (numberOne % numberTwo != 0);
 
