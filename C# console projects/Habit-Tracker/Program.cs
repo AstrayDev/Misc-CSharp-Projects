@@ -1,16 +1,12 @@
-﻿using System;
-using Habit_Tracker.Utility;
-
-namespace Habit_Tracker;
+﻿namespace Habit_Tracker;
 
 class Program
 {
     static void Main(string[] args)
     {
         HabitManager hm = new();
+        User user = new();
 
-        // hm.InsertHabitInfo();
-        hm.PrintAllRecords();
-        Console.WriteLine(Helpers.GetTableName());
+        user.InputLoop();
     }
 }
