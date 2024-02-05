@@ -1,14 +1,13 @@
 using Spectre.Console;
 using System;
+using System.Threading;
 
 namespace Habit_Tracker;
 
-public class User
+public class User : HabitManager
 {
     public void InputLoop()
     {
-        HabitManager hm = new();
-
         var table = new Table();
 
         table.Border = TableBorder.SimpleHeavy;
@@ -20,6 +19,7 @@ public class User
         table.AddRow("3: Insert habit entry");
         table.AddRow("4: Update habit entry");
         table.AddRow("5: Delete habit entry");
+        table.AddRow("6: Delete database");
         table.AddRow("0: Exit");
 
         bool shouldExit = false;
@@ -35,28 +35,37 @@ public class User
             switch (input)
             {
                 case "1":
-                    hm.CreateHabit();
+                    CreateHabit();
+                    Console.ReadLine();
                     break;
 
                 case "2":
-                    hm.PrintAllRecords();
+                    PrintAllRecords();
                     Console.ReadLine();
                     break;
 
                 case "3":
-                    hm.InsertHabitInfo();
-                    break;
-
-                case "4":
-                    AnsiConsole.MarkupLine("[underline red]Still working on it![/]");
+                    InsertHabitInfo();
                     Console.ReadLine();
                     break;
 
+                case "4":
+                    UpdateRecord();
+                    break;
+
                 case "5":
-                    hm.DeleteRecord();
+                    DeleteRecord();
+                    Console.ReadLine();
+                    break;
+
+                case "6":
+                    DeleteTable();
+                    Console.ReadLine();
                     break;
 
                 case "0":
+                    AnsiConsole.MarkupLine("[bold deepskyblue4_1]Goodbye[/]");
+                    Thread.Sleep(1000);
                     shouldExit = true;
                     break;
 

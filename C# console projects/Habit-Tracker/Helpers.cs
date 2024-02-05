@@ -6,6 +6,9 @@ namespace Habit_Tracker.Utility;
 
 public static class Helpers
 {
+    private static readonly SqliteConnection con = new("Data Source = Habit.db");
+    private static SqliteCommand? com;
+
     public static int StringToInt()
     {
         string? stringInput = Console.ReadLine();
@@ -21,11 +24,8 @@ public static class Helpers
         return intOutput;
     }
 
-    public static string GetTableName()
+    public static string? GetTableName()
     {
-        SqliteConnection con = new("Data Source = Habit.db");
-        SqliteCommand com;
-
         con.Open();
 
         // The quary is for finding any tables in the db so I can assign table names to vars for later quaries
@@ -50,7 +50,7 @@ public static class Helpers
 
         else
         {
-            return "Null";
+            return null;
         }
     }
 
@@ -60,9 +60,6 @@ public static class Helpers
         {
             Name = GetTableName()
         };
-
-        SqliteConnection con = new("Data Source = Habit.db");
-        SqliteCommand com = new();
 
         con.Open();
 
@@ -99,10 +96,10 @@ public static class Helpers
             suffixInt = TableRowCount() + 1;
         }
 
-        string idPrefix = "0" + DateTime.Now.ToString("MM");
+        string idPrefix = DateTime.Now.ToString("MM");
         string idSuffix = suffixInt.ToString();
 
-        string id = $"{idPrefix}0{idSuffix}";
+        string id = $"{idPrefix}{idSuffix}";
 
         return id;
     }

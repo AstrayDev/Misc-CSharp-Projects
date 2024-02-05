@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using Microsoft.Data.Sqlite;
 using Habit_Tracker.Models;
 using Habit_Tracker.Utility;
@@ -7,27 +6,27 @@ using Spectre.Console;
 
 namespace Habit_Tracker;
 
-public class HabitManager
+public abstract class HabitManager
 {
     private Habit habit = new();
 
+    private readonly SqliteConnection con = new("Data Source = Habit.db");
     private SqliteCommand? com;
-    public void CreateHabit()
+
+    protected void CreateHabit()
     {
-        if (File.Exists("Habit.db"))
+        if (Helpers.GetTableName() != null)
         {
-            AnsiConsole.MarkupLine("[underline red]A habit already exists and you can only track one[/]");
-            Console.ReadLine();
+            AnsiConsole.MarkupLine("[underline red]A habit already exists and you can only track one[/]\n");
             return;
         }
 
-        AnsiConsole.Markup("[underline blue]Please enter the name of the habit you wish to track.[/]");
+        AnsiConsole.Markup("[underline blue]Please enter the name of the habit you wish to track.[/]\n");
 
         habit.Name = Console.ReadLine();
+        // SqliteConnection con = new("Data Source = Habit.db");
 
-        SqliteConnection con = new("Data Source = Habit.db");
-
-        string createTable = @$"CREATE TABLE {habit.Name} (ID STRING, Frequancy STRING, Date DATETIME)";
+        string createTable = @$"CREATE TABLE {habit.Name} (ID STRING, Frequancy INTEGER, Date DATETIME)";
 
         AnsiConsole.MarkupLine("[bold green]Database and table created![/]");
 
@@ -35,82 +34,165 @@ public class HabitManager
         com = new(createTable, con);
         com.ExecuteNonQuery();
 
-        Console.ReadLine();
-
         con.Close();
     }
 
-    public void InsertHabitInfo()
+    protected void DeleteTable()
     {
-        AnsiConsole.MarkupLine("[underline blue]Enter the amount of times you've impulsivley done your habit today[/]");
-
-        if (!File.Exists("Habit.db"))
-        {
-            AnsiConsole.MarkupLine("[underline red]Database doesn't exist please create one[/]");
-        }
-
-        SqliteConnection con = new("Data Source = Habit.db");
-        con.Open();
-
         habit.Name = Helpers.GetTableName();
 
-        string submitDate = DateTime.Now.ToString();
+        if (habit.Name == null)
+        {
+            AnsiConsole.MarkupLine("[underline red]Table doesn't exist please create one[/]\n");
+            return;
+        }
 
+        AnsiConsole.MarkupLine("[bold red]This will delete ALL of you habit entries. Are you sure?[/]\n");
+
+        var input = AnsiConsole.Prompt
+        (
+            new SelectionPrompt<string>()
+            .AddChoices("Yes", "No")
+        );
+
+        if (input == "Yes")
+        {
+            string query = $"DROP TABLE {habit.Name}";
+
+            con.Open();
+
+            com = new(query, con);
+            com.ExecuteNonQuery();
+
+            con.Close();
+
+            AnsiConsole.MarkupLine("[bold green]Table deleted successfully![/]\n");
+        }
+
+        else if (input == "No")
+        {
+            return;
+        }
+    }
+
+    protected void InsertHabitInfo()
+    {
+        habit.Name = Helpers.GetTableName();
+
+        if (habit.Name == null)
+        {
+            AnsiConsole.MarkupLine("[underline red]Table doesn't exist please create one[/]\n");
+            return;
+        }
+
+        AnsiConsole.MarkupLine("[underline blue]Enter the amount of times you've impulsivley done your habit today[/]\n");
+
+        var table = new Table();
+
+        table.Border = TableBorder.Ascii2;
+        table.AddColumns("ID", "Frequancy", "Date");
+
+        con.Open();
+
+        habit.Date = DateTime.Now.ToString();
         habit.Frequancy = Helpers.StringToInt();
         habit.ID = Helpers.GenerateID();
 
-        string insertInfo = @$"INSERT INTO {habit.Name} (ID, Frequancy, Date) VALUES ('{habit.ID}', '{habit.Frequancy}', '{submitDate}')";
+        string insertInfo = @$"INSERT INTO {habit.Name} (ID, Frequancy, Date) VALUES ('{habit.ID}', '{habit.Frequancy}', '{habit.Date}')";
 
         com = new(insertInfo, con);
         com.ExecuteNonQuery();
 
-        AnsiConsole.MarkupLine("[underline blue]Entry inserted successfully![/]");
+        table.AddRow($"{habit.ID}", $"{habit.Frequancy}", $"{habit.Date}");
 
-        Console.ReadLine();
+        AnsiConsole.MarkupLine("[bold green]Entry inserted successfully![/]\n");
+        AnsiConsole.Write(table);
 
         con.Close();
     }
 
-    public void DeleteRecord()
+    protected void UpdateRecord()
     {
-        if (!File.Exists("Habit.db"))
+        habit.Name = Helpers.GetTableName();
+
+        if (habit.Name == null)
         {
-            AnsiConsole.MarkupLine("[underline red]Database doesn't exist please create one[/]");
+            AnsiConsole.MarkupLine("[underline red]Table doesn't exist please create one[/]\n");
+            return;
         }
 
-        AnsiConsole.MarkupLine("[underline blue]Enter the ID of the entry you wish to delete[/]");
+        con.Open();
+
+        AnsiConsole.MarkupLine("[underline blue]Please enter the ID of the entry you wish to update[/]\n");
 
         PrintAllRecords();
 
-        SqliteConnection con = new("Data Source = Habit.db");
-        con.Open();
+        int idSelection = Helpers.StringToInt();
 
+        AnsiConsole.MarkupLine("[underline blue]Now the new frequancy you wish to set[/]\n");
+
+        int newFrequancy = Helpers.StringToInt();
+
+        string query = $"UPDATE {habit.Name} SET Frequancy = @newFrequancy WHERE ID = {idSelection}";
+
+        SqliteCommand com = new(query, con);
+
+
+        com.Parameters.AddWithValue("@newFrequancy", $"{newFrequancy}");
+        com.ExecuteNonQuery();
+
+        AnsiConsole.MarkupLine("[bold green]Record updated successfully![/]\n");
+
+        con.Close();
+    }
+
+    protected void DeleteRecord()
+    {
         habit.Name = Helpers.GetTableName();
 
-        string? idSelection = Console.ReadLine();
+        if (habit.Name == null)
+        {
+            AnsiConsole.MarkupLine("[underline red]Table doesn't exist please create one[/]\n");
+            return;
+        }
+
+        AnsiConsole.MarkupLine("[underline blue]Enter the ID of the entry you wish to delete[/]\n");
+
+        PrintAllRecords();
+
+        con.Open();
+
+
+        int idSelection = Helpers.StringToInt();
 
         string deleteQuery = $"DELETE FROM {habit.Name} WHERE ID = {idSelection}";
 
         com = new(deleteQuery, con);
         com.ExecuteNonQuery();
 
-        AnsiConsole.MarkupLine("[underline blue]Entry deleted successfully![/]");
-        Console.ReadLine();
+        AnsiConsole.MarkupLine("[bold green]Entry deleted successfully![/]\n");
 
         con.Close();
     }
 
-    public void PrintAllRecords()
+    protected void PrintAllRecords()
     {
-        if (!File.Exists("Habit.db"))
+        habit.Name = Helpers.GetTableName();
+
+        if (habit.Name == null)
         {
-            AnsiConsole.MarkupLine("[underline red]Database doesn't exist please create one[/]");
+            AnsiConsole.MarkupLine("[underline red]Table doesn't exist please create one[/]\n");
+            return;
         }
 
-        SqliteConnection con = new("Data Source = Habit.db");
-        con.Open();
+        // Checks if there are any current entries
+        else if (Helpers.TableRowCount() == 0)
+        {
+            AnsiConsole.MarkupLine("[underline red]No entries submitted![/]\n");
+            return;
+        }
 
-        habit.Name = Helpers.GetTableName();
+        con.Open();
 
         string readCom = $"SELECT * FROM {habit.Name}";
 
