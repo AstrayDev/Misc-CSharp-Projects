@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Data.Sqlite;
 using Habit_Tracker.Models;
+using Spectre.Console;
 
 namespace Habit_Tracker.Utility;
 
@@ -11,14 +12,20 @@ public static class Helpers
 
     public static int StringToInt()
     {
-        string? stringInput = Console.ReadLine();
-        int intOutput;
-        bool intConvert = int.TryParse(stringInput, out intOutput);
+        bool correctInput = false;
+        int intOutput = 0;
 
-        if (!intConvert)
+        while (!correctInput)
         {
-            Console.WriteLine("Input was invalid. Please enter a number");
-            StringToInt();
+            string? stringInput = Console.ReadLine();
+            bool intConvert = int.TryParse(stringInput, out intOutput);
+
+            if (intConvert)
+            {
+                correctInput = true;
+                return intOutput;
+            }
+            AnsiConsole.MarkupLine("[underline red]Input was invalid. Please enter a number[/]");
         }
 
         return intOutput;

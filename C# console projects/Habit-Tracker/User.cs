@@ -19,7 +19,7 @@ public class User : HabitManager
         table.AddRow("3: Insert habit entry");
         table.AddRow("4: Update habit entry");
         table.AddRow("5: Delete habit entry");
-        table.AddRow("6: Delete database");
+        table.AddRow("6: Delete table");
         table.AddRow("0: Exit");
 
         bool shouldExit = false;
@@ -51,6 +51,7 @@ public class User : HabitManager
 
                 case "4":
                     UpdateRecord();
+                    Console.ReadLine();
                     break;
 
                 case "5":

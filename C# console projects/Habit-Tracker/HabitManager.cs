@@ -9,7 +9,6 @@ namespace Habit_Tracker;
 public abstract class HabitManager
 {
     private Habit habit = new();
-
     private readonly SqliteConnection con = new("Data Source = Habit.db");
     private SqliteCommand? com;
 
@@ -26,12 +25,12 @@ public abstract class HabitManager
         habit.Name = Console.ReadLine();
         // SqliteConnection con = new("Data Source = Habit.db");
 
-        string createTable = @$"CREATE TABLE {habit.Name} (ID STRING, Frequancy INTEGER, Date DATETIME)";
+        string query = @$"CREATE TABLE {habit.Name} (ID STRING, Frequancy INTEGER, Date DATETIME)";
 
         AnsiConsole.MarkupLine("[bold green]Database and table created![/]");
 
         con.Open();
-        com = new(createTable, con);
+        com = new(query, con);
         com.ExecuteNonQuery();
 
         con.Close();
@@ -98,9 +97,9 @@ public abstract class HabitManager
         habit.Frequancy = Helpers.StringToInt();
         habit.ID = Helpers.GenerateID();
 
-        string insertInfo = @$"INSERT INTO {habit.Name} (ID, Frequancy, Date) VALUES ('{habit.ID}', '{habit.Frequancy}', '{habit.Date}')";
+        string query = @$"INSERT INTO {habit.Name} (ID, Frequancy, Date) VALUES ('{habit.ID}', '{habit.Frequancy}', '{habit.Date}')";
 
-        com = new(insertInfo, con);
+        com = new(query, con);
         com.ExecuteNonQuery();
 
         table.AddRow($"{habit.ID}", $"{habit.Frequancy}", $"{habit.Date}");
@@ -121,6 +120,14 @@ public abstract class HabitManager
             return;
         }
 
+        if (habit.Name == null)
+        {
+            AnsiConsole.MarkupLine("[underline red]Table doesn't exist please create one[/]\n");
+            return;
+        }
+
+        // I made this a local variable because it wouldn't work otherwise even though the other methods do. Bad computer
+        SqliteConnection con = new("Data Source = Habit.db");
         con.Open();
 
         AnsiConsole.MarkupLine("[underline blue]Please enter the ID of the entry you wish to update[/]\n");
@@ -162,15 +169,24 @@ public abstract class HabitManager
 
         con.Open();
 
+        int currentEntryCount = Helpers.TableRowCount();
 
         int idSelection = Helpers.StringToInt();
 
-        string deleteQuery = $"DELETE FROM {habit.Name} WHERE ID = {idSelection}";
+        string query = $"DELETE FROM {habit.Name} WHERE ID = {idSelection}";
 
-        com = new(deleteQuery, con);
+        com = new(query, con);
         com.ExecuteNonQuery();
 
-        AnsiConsole.MarkupLine("[bold green]Entry deleted successfully![/]\n");
+        if (Helpers.TableRowCount() == currentEntryCount - 1)
+        {
+            AnsiConsole.MarkupLine("[bold green]Entry deleted successfully![/]\n");
+        }
+
+        else
+        {
+            AnsiConsole.MarkupLine("[underline red]ID not found try again[/]");
+        }
 
         con.Close();
     }
@@ -194,9 +210,9 @@ public abstract class HabitManager
 
         con.Open();
 
-        string readCom = $"SELECT * FROM {habit.Name}";
+        string query = $"SELECT * FROM {habit.Name}";
 
-        com = new(readCom, con);
+        com = new(query, con);
         SqliteDataReader reader = com.ExecuteReader();
 
         var table = new Table();
