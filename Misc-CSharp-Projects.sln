@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MathGame", "C# console proj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Habit-Tracker", "C# console projects\Habit-Tracker\Habit-Tracker.csproj", "{49FEDBAA-E717-49B1-82F9-CE2795514762}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coding-Tracker", "C# console projects\Coding-Tracker\Coding-Tracker.csproj", "{2EEAD7FB-E3E9-4751-9996-2D28870A99AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,9 +28,14 @@ Global
 		{49FEDBAA-E717-49B1-82F9-CE2795514762}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49FEDBAA-E717-49B1-82F9-CE2795514762}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49FEDBAA-E717-49B1-82F9-CE2795514762}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EEAD7FB-E3E9-4751-9996-2D28870A99AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EEAD7FB-E3E9-4751-9996-2D28870A99AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EEAD7FB-E3E9-4751-9996-2D28870A99AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EEAD7FB-E3E9-4751-9996-2D28870A99AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{AF05FFE0-D874-400C-B023-1DC74726141F} = {473F53E4-8E4B-4700-9EF7-B19E5BC069F9}
 		{49FEDBAA-E717-49B1-82F9-CE2795514762} = {473F53E4-8E4B-4700-9EF7-B19E5BC069F9}
+		{2EEAD7FB-E3E9-4751-9996-2D28870A99AE} = {473F53E4-8E4B-4700-9EF7-B19E5BC069F9}
 	EndGlobalSection
 EndGlobal
