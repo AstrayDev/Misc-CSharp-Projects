@@ -5,6 +5,8 @@ using Microsoft.Data.Sqlite;
 using Coding_Tracker.Controller;
 using Coding_Tracker.Timer;
 using Dapper;
+using System.Threading.Tasks;
+using Spectre.Console;
 
 namespace Coding_Tracker;
 
@@ -20,10 +22,8 @@ class Program
 
     static void Main(string[] args)
     {
-        CodingTimer t = new();
+        CodingTimer sessionTimer = new CodingTimer();
 
-        t.StartSession();
-
-        Console.WriteLine(t.GetSessionLength());
+        sessionTimer.StartSession();
     }
 }

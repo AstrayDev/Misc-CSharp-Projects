@@ -2,8 +2,10 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
 using Spectre.Console;
+using SQLitePCL;
 
 namespace Coding_Tracker.Timer;
 
@@ -12,7 +14,7 @@ public class CodingTimer
     protected string? SessionLength { get; private set; } = null;
     private bool StopTimer = false;
 
-    private void StartTimer()
+    public void StartTimer()
     {
         Stopwatch timer = new Stopwatch();
         TimeSpan timeElapsed = new TimeSpan();
@@ -33,20 +35,31 @@ public class CodingTimer
 
     public void StartSession()
     {
-        new Thread(new ThreadStart(StartTimer)).Start();
+        Console.CursorVisible = false;
+        Console.Clear();
 
-        AnsiConsole.MarkupLine("\n\n[underline blue]Stop Session?[/]");
+        Parallel.Invoke
+      (
+          () =>
+          {
+              StartTimer();
+          },
 
-        var input = AnsiConsole.Prompt
-        (
-            new SelectionPrompt<string>()
-            .AddChoices("Yes", "No")
-        );
+          () =>
+          {
+              AnsiConsole.MarkupLine("[underline blue]Press enter to quit session.\n[/]");
+          },
 
-        if (input == "Yes")
-        {
-            StopTimer = true;
-        }
+          () =>
+          {
+              if (Helpers.GetuserInput())
+              {
+                  StopTimer = true;
+              }
+          }
+      );
+
+        Console.CursorVisible = true;
     }
 
     public string GetSessionLength() => SessionLength ?? "No recorded time";
