@@ -1,20 +1,15 @@
 using System;
 using System.Diagnostics;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Primitives;
 using Spectre.Console;
-using SQLitePCL;
 
 namespace Coding_Tracker.Timer;
 
 public class CodingTimer
 {
-    protected string? SessionLength { get; private set; } = null;
+    private string? SessionLength = null;
     private bool StopTimer = false;
 
-    public void StartTimer()
+    public void Start()
     {
         Stopwatch timer = new Stopwatch();
         TimeSpan timeElapsed = new TimeSpan();
@@ -33,34 +28,10 @@ public class CodingTimer
         return;
     }
 
-    public void StartSession()
+    public void Stop()
     {
-        Console.CursorVisible = false;
-        Console.Clear();
-
-        Parallel.Invoke
-      (
-          () =>
-          {
-              StartTimer();
-          },
-
-          () =>
-          {
-              AnsiConsole.MarkupLine("[underline blue]Press enter to quit session.\n[/]");
-          },
-
-          () =>
-          {
-              if (Helpers.GetuserInput())
-              {
-                  StopTimer = true;
-              }
-          }
-      );
-
-        Console.CursorVisible = true;
+        StopTimer = true;
     }
 
-    public string GetSessionLength() => SessionLength ?? "No recorded time";
+    public string GetSessionLength() => SessionLength ?? "Error no recorded time to display";
 }

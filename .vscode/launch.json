@@ -33,7 +33,7 @@
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/C# console projects/Coding-Tracker/bin/Debug/net8.0/Coding-Tracker.dll",
       "args": [],
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/C# console projects/Coding-Tracker",
       "console": "integratedTerminal"
     }
   ]

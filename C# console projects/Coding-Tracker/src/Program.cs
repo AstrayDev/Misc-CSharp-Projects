@@ -1,12 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Data.Sqlite;
 using Coding_Tracker.Controller;
 using Coding_Tracker.Timer;
-using Dapper;
-using System.Threading.Tasks;
 using Spectre.Console;
+using Coding_Tracker.Input;
 
 namespace Coding_Tracker;
 
@@ -18,12 +15,37 @@ class Program
 
     private static IConfigurationRoot Configuration = builder.Build();
     private static readonly string? ConnectionString = Configuration.GetConnectionString("ConnectionString");
-    private readonly static TrackerController Controller = new(ConnectionString!);
+    private readonly static TrackerController Controller = new TrackerController("Data Source = Tracker.db");
 
     static void Main(string[] args)
     {
-        CodingTimer sessionTimer = new CodingTimer();
+        if (!File.Exists("Tracker.db"))
+        {
+            AnsiConsole.MarkupLine("[underline red]No database found. Would you like to create one?[/]");
 
-        sessionTimer.StartSession();
+            var input = AnsiConsole.Prompt
+            (
+                new SelectionPrompt<string>()
+                .AddChoices("Yes", "No")
+            );
+
+            if (input == "Yes")
+            {
+                File.Create("Tracker.db");
+
+                AnsiConsole.MarkupLine("[bold green]Database created![/]");
+            }
+
+            else
+            {
+                AnsiConsole.MarkupLine("[underline red]Can't continue without a database[/]");
+                return;
+            }
+        }
+
+        CodingTimer sessionTimer = new CodingTimer();
+        UserInput userInput = new UserInput();
+
+        userInput.InputLoop();
     }
 }
