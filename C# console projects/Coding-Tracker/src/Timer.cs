@@ -14,6 +14,8 @@ public class CodingTimer
         Stopwatch timer = new Stopwatch();
         TimeSpan timeElapsed = new TimeSpan();
 
+        AnsiConsole.MarkupLine("[underline blue]Press enter to stop session[/]");
+
         timer.Start();
 
         while (!StopTimer)
@@ -24,8 +26,6 @@ public class CodingTimer
         }
 
         SessionLength = $"{timeElapsed.Hours:00}:{timeElapsed.Minutes:00}:{timeElapsed.Seconds:00}";
-
-        return;
     }
 
     public void Stop()

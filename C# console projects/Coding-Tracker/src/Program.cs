@@ -4,6 +4,7 @@ using Coding_Tracker.Controller;
 using Coding_Tracker.Timer;
 using Spectre.Console;
 using Coding_Tracker.Input;
+using System;
 
 namespace Coding_Tracker;
 
@@ -15,7 +16,6 @@ class Program
 
     private static IConfigurationRoot Configuration = builder.Build();
     private static readonly string? ConnectionString = Configuration.GetConnectionString("ConnectionString");
-    private readonly static TrackerController Controller = new TrackerController("Data Source = Tracker.db");
 
     static void Main(string[] args)
     {
@@ -43,7 +43,6 @@ class Program
             }
         }
 
-        CodingTimer sessionTimer = new CodingTimer();
         UserInput userInput = new UserInput();
 
         userInput.InputLoop();

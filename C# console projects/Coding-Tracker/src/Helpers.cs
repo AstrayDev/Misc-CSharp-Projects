@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using Dapper;
 using Microsoft.Data.Sqlite;
+using Spectre.Console;
 
 public static class Helpers
 {

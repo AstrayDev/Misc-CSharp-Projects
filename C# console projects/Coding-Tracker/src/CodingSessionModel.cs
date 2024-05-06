@@ -8,5 +8,5 @@ public class CodingSessionModel
 {
     public string? ID { get; init; }
     public string? Duration { get; init; }
-    public DateTime Date { get; init; }
+    public string? Date { get; init; }
 }

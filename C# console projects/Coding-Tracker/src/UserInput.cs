@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Threading;
 using Coding_Tracker.Controller;
 using Spectre.Console;
@@ -45,7 +46,7 @@ public class UserInput
         table.AddRow("2: Print all records");
         table.AddRow("3: Start a new session");
         table.AddRow("4: Delete a session");
-        table.AddRow("5: Delete table");
+        table.AddRow("5: Delete all records");
         table.AddRow("0: Exit");
 
 
@@ -67,6 +68,7 @@ public class UserInput
 
                 case "2":
                     controller.PrintAllRecords();
+                    Console.ReadLine();
                     break;
 
                 case "3":
@@ -89,6 +91,7 @@ public class UserInput
 
                 default:
                     AnsiConsole.Markup("[underline red]Invalid input. Try Again[/]");
+                    Console.ReadLine();
                     break;
             }
         }

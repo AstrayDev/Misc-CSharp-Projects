@@ -7,6 +7,8 @@ using Coding_Tracker.Model;
 using Coding_Tracker.Timer;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Transactions;
+using System.Security.AccessControl;
 
 namespace Coding_Tracker.Controller;
 
@@ -19,9 +21,19 @@ public class TrackerController
         ConnectionString = connectionString;
     }
 
-    private readonly SqliteConnection Con = new SqliteConnection(ConnectionString);
+    private struct SessionInfo
+    {
+        public string ID;
+        public string SessionLength;
+        public string Date;
+    }
+
+    private SessionInfo info = new SessionInfo();
+
+    private readonly SqliteConnection Con = new SqliteConnection("Data Source = Tracker.db");
     private CodingSessionModel Session;
-    private CodingTimer Timer = new CodingTimer();
+    // private string SessionLength;
+    // private CodingTimer Timer = new CodingTimer();
 
     public void CreateTable()
     {
@@ -50,12 +62,32 @@ public class TrackerController
             else
             {
                 AnsiConsole.MarkupLine("[underline red]\nCan't continue without a table[/]");
+                Console.ReadLine();
             }
+        }
+
+        else
+        {
+            AnsiConsole.MarkupLine("[underline red]Table already exists[/]");
+            Console.ReadLine();
         }
     }
 
     public void DeleteAllRecords()
     {
+        if (!Helpers.CheckForTable())
+        {
+            AnsiConsole.MarkupLine("[underline red]No table in database. Please create one[/]");
+        }
+
+        else if (Helpers.DBEntryCount() == 0)
+        {
+            AnsiConsole.MarkupLine("[underline red]No entries to delete[/]");
+
+            Console.ReadLine();
+            return;
+        }
+
         AnsiConsole.MarkupLine("[underline red]This will delete ALL records, are you sure?[/]");
 
         var input = AnsiConsole.Prompt
@@ -69,6 +101,7 @@ public class TrackerController
             Con.DeleteAll<CodingSessionModel>();
 
             AnsiConsole.MarkupLine("[bold green]All records deleted successfully![/]");
+            Console.ReadLine();
         }
 
         else
@@ -79,6 +112,11 @@ public class TrackerController
 
     public void StartSession()
     {
+        if (!Helpers.CheckForTable())
+        {
+            AnsiConsole.MarkupLine("[underline red]No table in database. Please create one[/]");
+        }
+
         CodingTimer timer = new CodingTimer();
 
         Console.CursorVisible = false;
@@ -89,12 +127,8 @@ public class TrackerController
           () =>
           {
               timer.Start();
-              Session = new CodingSessionModel() { Duration = timer.GetSessionLength() };
-          },
-
-          () =>
-          {
-              AnsiConsole.MarkupLine("[underline blue]Press enter to quit session.\n[/]");
+              info.SessionLength = timer.GetSessionLength();
+              info.ID = Helpers.GenerateID();
           },
 
           () =>
@@ -131,16 +165,15 @@ public class TrackerController
         var table = new Table();
 
         Con.Open();
-        string name = Helpers.GetTableName();
 
         table.Border = TableBorder.Ascii2;
         table.AddColumns("ID", "Duration", "Date");
 
         Session = new CodingSessionModel()
         {
-            ID = Helpers.GenerateID(),
-            // Duration = Timer.GetSessionLength(),
-            Date = DateTime.Now
+            ID = info.ID,
+            Duration = info.SessionLength,
+            Date = DateTime.Now.ToString()
         };
 
         Con.Insert(Session);
@@ -148,18 +181,37 @@ public class TrackerController
 
         table.AddRow($"{Session.ID}", $"{Session.Duration}", $"{Session.Date}");
         AnsiConsole.Write(table);
+
+        Console.ReadLine();
     }
 
     public void DeleteSession()
     {
+        if (!Helpers.CheckForTable())
+        {
+            AnsiConsole.MarkupLine("[underline red]No table in database. Please create one[/]");
+        }
+
+        else if (Helpers.DBEntryCount() == 0)
+        {
+            AnsiConsole.MarkupLine("[underline red]No entried to delete[/]");
+
+            Console.ReadLine();
+            return;
+        }
+
         AnsiConsole.MarkupLine("[underline blue]Enter the ID for the entry you wish to delete[/]");
 
         var table = new Table();
+
+        PrintAllRecords();
 
         string? idInput = Console.ReadLine();
 
         int currentEntryCount = Helpers.DBEntryCount();
         int newEntryCount = currentEntryCount - 1;
+
+        Con.Delete(new CodingSessionModel { ID = idInput });
 
         bool wasEntryDeleted = currentEntryCount > newEntryCount;
 
@@ -168,12 +220,13 @@ public class TrackerController
         if (wasEntryDeleted)
         {
             AnsiConsole.MarkupLine("[underline red]Could not find an entry with that ID. Try again[/]");
+            Console.ReadLine();
         }
 
         else
         {
-            Con.Delete(idInput);
             AnsiConsole.MarkupLine("[bold green]Entry deleted successfully![/]");
+            Console.ReadLine();
         }
 
         Con.Close();
@@ -181,12 +234,34 @@ public class TrackerController
 
     public void PrintAllRecords()
     {
-        Con.Open();
+        if (!Helpers.CheckForTable())
+        {
+            AnsiConsole.MarkupLine("[underline red]No table in database. Please create one[/]");
+        }
 
-        var entries = Con.GetAll<CodingSessionModel>().ToList();
-        var table = new Table();
+        else if (Helpers.DBEntryCount() > 0)
+        {
+            Con.Open();
 
-        table.AddColumns("ID", "Duration", "Date");
-        Console.Write(entries);
+            var entries = Con.ExecuteReader("SELECT * FROM Tracker");
+            var table = new Table();
+
+            table.Border = TableBorder.Ascii2;
+            table.AddColumns("ID", "Duration", "Date");
+
+            while (entries.Read())
+            {
+                table.AddRow($"{entries["ID"]}", $"{entries["Duration"]}", $"{entries["Date"]}");
+            }
+
+            AnsiConsole.Write(table);
+        }
+
+        else
+        {
+            AnsiConsole.MarkupLine("[underline red]No records in database[/]");
+        }
+
+        Con.Close();
     }
 }
