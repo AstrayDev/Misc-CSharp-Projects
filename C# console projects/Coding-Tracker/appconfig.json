@@ -1,3 +1,5 @@
 {
-  "ConnectionString": "Data Source = Tracker.db" 
+  "ConnectionStrings": {
+    "ConnectionString": "Data Source = Tracker.db"
+  }
 }

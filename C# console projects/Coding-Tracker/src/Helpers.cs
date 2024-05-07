@@ -1,10 +1,7 @@
 using System;
 using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.Sqlite;
-using Spectre.Console;
 
 public static class Helpers
 {

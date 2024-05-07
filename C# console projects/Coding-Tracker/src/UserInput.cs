@@ -9,7 +9,7 @@ public class UserInput
 {
     public void InputLoop()
     {
-        TrackerController controller = new TrackerController("Data Source = Tracker.db");
+        TrackerController controller = new TrackerController();
 
         string[] greetings =
         {

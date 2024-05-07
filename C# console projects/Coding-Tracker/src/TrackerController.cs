@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using Microsoft.Extensions.Configuration;
 using Spectre.Console;
 using Microsoft.Data.Sqlite;
 using Dapper;
@@ -10,15 +12,15 @@ namespace Coding_Tracker.Controller;
 
 public class TrackerController
 {
-    private static string? ConnectionString;
+    private static IConfigurationBuilder builder = new ConfigurationBuilder()
+              .SetBasePath(Directory.GetCurrentDirectory())
+              .AddJsonFile(@"appconfig.json", optional: true, reloadOnChange: true);
 
-    public TrackerController(string connectionString)
-    {
-        ConnectionString = connectionString;
-    }
+    private static IConfigurationRoot Configuration = builder.Build();
+    private static readonly string? ConnectionString = Configuration.GetConnectionString("ConnectionString");
 
-    private readonly SqliteConnection Con = new SqliteConnection("Data Source = Tracker.db");
-    private CodingSessionModel Session;
+    private readonly SqliteConnection Con = new SqliteConnection(ConnectionString);
+    private CodingSessionModel? Session;
     private CodingTimer Timer = new CodingTimer();
 
     public void CreateTable()
@@ -110,8 +112,6 @@ public class TrackerController
             return;
         }
 
-        CodingTimer timer = new CodingTimer();
-
         Console.CursorVisible = false;
         Console.Clear();
 
@@ -188,8 +188,6 @@ public class TrackerController
         }
 
         AnsiConsole.MarkupLine("[underline blue]Enter the ID for the entry you wish to delete[/]");
-
-        var table = new Table();
 
         PrintAllRecords();
 
