@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using Microsoft.Extensions.Configuration;
-using Coding_Tracker.Controller;
-using Coding_Tracker.Timer;
 using Spectre.Console;
 using Coding_Tracker.Input;
 using System;
@@ -33,7 +31,10 @@ class Program
             {
                 File.Create("Tracker.db");
 
-                AnsiConsole.MarkupLine("[bold green]Database created![/]");
+                AnsiConsole.MarkupLine("[bold green]Database created! Please restart program to access the database[/]");
+                Console.ReadLine();
+
+                Environment.Exit(0);
             }
 
             else

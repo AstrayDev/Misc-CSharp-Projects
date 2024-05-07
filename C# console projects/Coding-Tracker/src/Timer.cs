@@ -6,8 +6,7 @@ namespace Coding_Tracker.Timer;
 
 public class CodingTimer
 {
-    private string? SessionLength = null;
-    private bool StopTimer = false;
+    public string? SessionLength { get; private set; }
 
     public void Start()
     {
@@ -18,7 +17,7 @@ public class CodingTimer
 
         timer.Start();
 
-        while (!StopTimer)
+        while (!(Console.KeyAvailable && Console.ReadKey(true).Key == ConsoleKey.Enter))
         {
             timeElapsed = timer.Elapsed;
 
@@ -27,11 +26,4 @@ public class CodingTimer
 
         SessionLength = $"{timeElapsed.Hours:00}:{timeElapsed.Minutes:00}:{timeElapsed.Seconds:00}";
     }
-
-    public void Stop()
-    {
-        StopTimer = true;
-    }
-
-    public string GetSessionLength() => SessionLength ?? "Error no recorded time to display";
 }

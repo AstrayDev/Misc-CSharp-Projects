@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Spectre.Console;
@@ -19,25 +20,8 @@ public static class Helpers
 
     public static string GenerateID()
     {
-        string prefix;
-        string suffix;
-
-        string month = DateTime.Now.Date.ToString("MM");
-        string[] monthArr = month.Split();
-
-        if (monthArr.Contains("0"))
-        {
-            prefix = monthArr[1];
-        }
-
-        else
-        {
-            prefix = month;
-        }
-
-        suffix = DBEntryCount().ToString();
-
-        return $"{prefix}-{suffix}";
+        int entryCount = DBEntryCount() + 1;
+        return entryCount.ToString();
     }
 
     public static bool CheckForTable()

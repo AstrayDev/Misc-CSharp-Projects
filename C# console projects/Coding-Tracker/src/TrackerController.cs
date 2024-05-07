@@ -5,10 +5,6 @@ using Dapper;
 using Dapper.Contrib.Extensions;
 using Coding_Tracker.Model;
 using Coding_Tracker.Timer;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Transactions;
-using System.Security.AccessControl;
 
 namespace Coding_Tracker.Controller;
 
@@ -21,19 +17,9 @@ public class TrackerController
         ConnectionString = connectionString;
     }
 
-    private struct SessionInfo
-    {
-        public string ID;
-        public string SessionLength;
-        public string Date;
-    }
-
-    private SessionInfo info = new SessionInfo();
-
     private readonly SqliteConnection Con = new SqliteConnection("Data Source = Tracker.db");
     private CodingSessionModel Session;
-    // private string SessionLength;
-    // private CodingTimer Timer = new CodingTimer();
+    private CodingTimer Timer = new CodingTimer();
 
     public void CreateTable()
     {
@@ -57,6 +43,7 @@ public class TrackerController
                 con.Close();
 
                 AnsiConsole.MarkupLine("[bold green]Table created![/]");
+                Console.ReadLine();
             }
 
             else
@@ -78,6 +65,9 @@ public class TrackerController
         if (!Helpers.CheckForTable())
         {
             AnsiConsole.MarkupLine("[underline red]No table in database. Please create one[/]");
+            Console.ReadLine();
+
+            return;
         }
 
         else if (Helpers.DBEntryCount() == 0)
@@ -115,6 +105,9 @@ public class TrackerController
         if (!Helpers.CheckForTable())
         {
             AnsiConsole.MarkupLine("[underline red]No table in database. Please create one[/]");
+            Console.ReadLine();
+
+            return;
         }
 
         CodingTimer timer = new CodingTimer();
@@ -122,42 +115,28 @@ public class TrackerController
         Console.CursorVisible = false;
         Console.Clear();
 
-        Parallel.Invoke
-      (
-          () =>
-          {
-              timer.Start();
-              info.SessionLength = timer.GetSessionLength();
-              info.ID = Helpers.GenerateID();
-          },
+        Timer.Start();
 
-          () =>
-          {
-              if (Helpers.IsEnterPressed())
-              {
-                  timer.Stop();
+        Console.Clear();
 
-                  AnsiConsole.Console.MarkupLine("[underline blue]Add session to database?[/]");
+        AnsiConsole.Console.MarkupLine("[underline blue]Add session to database?[/]");
 
-                  var input = AnsiConsole.Prompt
-                  (
-                    new SelectionPrompt<string>()
-                    .AddChoices("Yes", "No")
-                  );
+        var input = AnsiConsole.Prompt
+        (
+          new SelectionPrompt<string>()
+          .AddChoices("Yes", "No")
+        );
 
-                  if (input == "Yes")
-                  {
-                      AddSessionToDB();
-                  }
+        if (input == "Yes")
+        {
+            AddSessionToDB();
+        }
 
-                  else
-                  {
-                      Console.CursorVisible = true;
-                      return;
-                  }
-              }
-          }
-      );
+        else
+        {
+            Console.CursorVisible = true;
+            return;
+        }
     }
 
     private void AddSessionToDB()
@@ -169,17 +148,22 @@ public class TrackerController
         table.Border = TableBorder.Ascii2;
         table.AddColumns("ID", "Duration", "Date");
 
-        Session = new CodingSessionModel()
+
+        Session = new CodingSessionModel
         {
-            ID = info.ID,
-            Duration = info.SessionLength,
+            ID = Helpers.GenerateID(),
+            Duration = Timer.SessionLength,
             Date = DateTime.Now.ToString()
         };
 
-        Con.Insert(Session);
+        string q = $"INSERT INTO Tracker (ID, Duration, Date) VALUES ('{Session.ID}', '{Session.Duration}', '{Session.Date}')";
+
+        Con.Execute(q);
         Con.Close();
 
         table.AddRow($"{Session.ID}", $"{Session.Duration}", $"{Session.Date}");
+
+        AnsiConsole.MarkupLine("[bold green]Entry inserted successfully![/]\n");
         AnsiConsole.Write(table);
 
         Console.ReadLine();
@@ -190,6 +174,9 @@ public class TrackerController
         if (!Helpers.CheckForTable())
         {
             AnsiConsole.MarkupLine("[underline red]No table in database. Please create one[/]");
+            Console.ReadLine();
+
+            return;
         }
 
         else if (Helpers.DBEntryCount() == 0)
@@ -209,23 +196,20 @@ public class TrackerController
         string? idInput = Console.ReadLine();
 
         int currentEntryCount = Helpers.DBEntryCount();
-        int newEntryCount = currentEntryCount - 1;
-
+        Con.Open();
         Con.Delete(new CodingSessionModel { ID = idInput });
 
-        bool wasEntryDeleted = currentEntryCount > newEntryCount;
+        int newEntryCount = Helpers.DBEntryCount();
 
-        Con.Open();
-
-        if (wasEntryDeleted)
+        if (currentEntryCount > newEntryCount)
         {
-            AnsiConsole.MarkupLine("[underline red]Could not find an entry with that ID. Try again[/]");
+            AnsiConsole.MarkupLine("[bold green]Entry deleted successfully![/]");
             Console.ReadLine();
         }
 
         else
         {
-            AnsiConsole.MarkupLine("[bold green]Entry deleted successfully![/]");
+            AnsiConsole.MarkupLine("[underline red]Could not find an entry with that ID. Try again[/]");
             Console.ReadLine();
         }
 
